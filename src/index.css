@@ -130,7 +130,10 @@ u, .ul { text-decoration: underline; text-underline-offset: 3px; text-decoration
 header.nav { position: sticky; top: 0; z-index: 50; background: rgba(244,243,237,0.86); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1.5px solid var(--line); }
 header.nav.navbar { display: block; height: auto; padding: 0; box-shadow: none; }
 .nav-in { display: flex; align-items: center; gap: 34px; height: 60px; }
-.brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+/* The brand link sits outside .nav-links, so Infima's default `a:hover`
+   (blue + underline) would otherwise leak through on hover. */
+.brand:hover, .brand:focus { color: var(--ink); text-decoration: none; }
 .brand .wm { font-weight: 700; font-size: 18px; letter-spacing: -0.04em; }
 .nav-links { display: flex; gap: 28px; align-items: center; }
 .nav-links a { font-size: 13.5px; text-decoration: none; color: var(--ink-2); text-underline-offset: 3px; white-space: nowrap; }
