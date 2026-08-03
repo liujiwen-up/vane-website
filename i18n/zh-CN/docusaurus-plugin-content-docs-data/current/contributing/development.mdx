@@ -65,7 +65,7 @@ pre-commit install
 根目录格式化器会使用 `PATH` 中的 `shfmt` 处理 shell 文件；上面的 Ubuntu 命令已安装该工具。格式化 `external/duckdb` 前，请安装 DuckDB formatter 要求的其他特定版本：
 
 ```bash
-uv pip install "black>=24" "clang_format==11.0.1" cmake-format
+uv pip install "black==24.*" "clang_format==11.0.1" cmake-format
 ```
 
 示例：
@@ -75,6 +75,18 @@ scripts/format root --changed
 scripts/format duckdb --changed
 scripts/format workspace --changed
 pre-commit run --from-ref origin/main --to-ref HEAD
+```
+
+添加 `--check` 可以只检查格式，不修改文件。Vane 自有文件和 DuckDB subtree 都有改动时，请使用 `workspace`：
+
+```bash
+scripts/format workspace --changed --check
+```
+
+如需检查相对于某个已提交 ref 的改动（例如在 CI 中），请运行：
+
+```bash
+scripts/format workspace --from-ref origin/main --check
 ```
 
 根目录格式化器默认避免扫描 `external/duckdb`。修改 DuckDB 内部实现时，请使用 `duckdb` 命令；`workspace` 会依次运行两套格式化器。
