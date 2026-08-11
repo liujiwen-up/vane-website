@@ -31,8 +31,8 @@ export const USE_CASES = [
     titleZh: '网页文本转嵌入',
     tag: 'embeddings',
     tagZh: 'embedding',
-    pipeline: ['WARC rows', 'decode English pages', 'chunk text', 'embed_text', 'write files'],
-    pipelineZh: ['WARC 行', '解码英文页面', '文本分块', 'embed_text', '写出文件'],
+    pipeline: ['WARC rows', 'decode English pages', 'chunk text', 'vane.ai.embed', 'write files'],
+    pipelineZh: ['WARC 行', '解码英文页面', '文本分块', 'vane.ai.embed', '写出文件'],
     problem:
       'Web crawl records need to be decoded, language-filtered, chunked, embedded, and written without losing their source IDs.',
     problemZh:
@@ -55,8 +55,8 @@ export const USE_CASES = [
     titleZh: '语义搜索',
     tag: 'retrieval',
     tagZh: '检索',
-    pipeline: ['question rows', 'embed_text', 'split by score', 'cosine match', 'show'],
-    pipelineZh: ['问题数据', 'embed_text', '按分数分组', '余弦匹配', '展示'],
+    pipeline: ['question rows', 'vane.ai.embed', 'split by score', 'cosine match', 'show'],
+    pipelineZh: ['问题数据', 'vane.ai.embed', '按分数分组', '余弦匹配', '展示'],
     problem:
       'A bounded Q&A corpus needs an offline semantic-matching pass before you commit to a separate vector database.',
     problemZh:
@@ -165,7 +165,7 @@ export const USE_CASES = [
     whenZh: '评估 VLM 是否真正使用视觉证据并诊断失败时使用。',
     filename: 'multimodal_structured_outputs.py',
     example: 'examples/multimodal_structured_outputs.py',
-    code: `<span class="k">export</span> HF_TOKEN<span class="p">=</span>your_hugging_face_token
+    code: `<span class="k">export</span> OPENAI_API_KEY<span class="p">=</span>your_provider_token
 <span class="f">python</span> examples/multimodal_structured_outputs.py <span class="p">--</span>limit <span class="n">1</span> <span class="p">--</span>skip-judge`,
   },
   {
@@ -175,8 +175,8 @@ export const USE_CASES = [
     titleZh: '语音 AI 分析',
     tag: 'audio',
     tagZh: '音频',
-    pipeline: ['audio rows', 'transcribe', 'summarize', 'subtitle rows', 'embed_text'],
-    pipelineZh: ['音频数据', '转写', '摘要', '字幕分段', 'embed_text'],
+    pipeline: ['audio rows', 'transcribe', 'summarize', 'subtitle rows', 'vane.ai.embed'],
+    pipelineZh: ['音频数据', '转写', '摘要', '字幕分段', 'vane.ai.embed'],
     problem:
       'Audio analytics combines transcription-level metadata with searchable embeddings for each subtitle segment.',
     problemZh:

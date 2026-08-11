@@ -157,7 +157,7 @@ For callable lifecycle, batch and cardinality behavior, and Relation transformat
 This is not required for the Quickstart. To try OpenAI, install its optional dependency in the same environment, then set credentials in the worker environment:
 
 ```bash
-uv pip install openai
+uv pip install 'vane-ai[openai]'
 export OPENAI_API_KEY="<your-key>"
 ```
 
@@ -169,11 +169,14 @@ with_ai = con.sql("""
         document_id,
         ai_prompt(
             source_text,
-            struct_pack(
-                provider := 'openai',
+            system_message := 'Write one short review note.',
+            provider := 'openai',
+            model := 'gpt-4o-mini',
+            options := struct_pack(
                 -- Optional for OpenAI-compatible providers:
                 -- base_url := 'https://api.example.com/v1',
-                model := 'gpt-4o-mini'
+                -- use_chat_completions := true,
+                max_output_tokens := 64
             )
         ) AS review_note
     FROM documents
@@ -323,7 +326,7 @@ selected = priced.filter(
 
 # SQL stage.
 summary = con.sql("""
-    SELECT category, sum(total) AS revenue
+    SELECT category, CAST(sum(total) AS BIGINT) AS revenue
     FROM selected
     GROUP BY category
     ORDER BY category
@@ -711,16 +714,18 @@ Vane currently exposes two AI operations as Expressions:
 
 | Operation | SQL Expression | Python Expression | Result | Supported providers |
 | --- | --- | --- | --- | --- |
-| Generate text | `ai_prompt(messages [, options])` | `vane.ai.prompt(expression, ...)` | One `VARCHAR` value per input row | `openai`, `google`, `anthropic`, `vllm` |
-| Create an embedding | `ai_embed(text [, options])` | `vane.ai.embed(expression, ...)` | One `FLOAT[]` value per input row, or `FLOAT[n]` when `dimensions=n` | `openai`, `google`, `transformers` |
+| Generate text or structured output | `ai_prompt(messages, ...)` | `vane.ai.prompt(expression, ...)` | One `VARCHAR` or native `STRUCT` value per input row | `openai`, `google`, `anthropic`, `vllm` |
+| Create an embedding | `ai_embed(text, ...)` | `vane.ai.embed(expression, ...)` | One fixed-size `FLOAT[n]` value per input row | `openai`, `google`, `transformers` |
 
 Both operations preserve row count. Keep any source columns needed later in
 the projection, name the generated column with SQL `AS` or Python `.alias()`,
 and carry a stable ID so every provider result can be traced to its input.
 
-SQL options are planning configuration, not row data. The optional
-`struct_pack(...)` argument must therefore contain constants; provider names,
-models, and execution settings cannot vary by input row in one Expression.
+SQL options are planning configuration, not row data. Pass provider and model
+selection plus common operation settings as named arguments, and pass provider
+request and execution settings through `options := struct_pack(...)`. Those
+values must be constants; provider names, models, and execution settings cannot
+vary by input row in one Expression.
 
 There is no Expression classification function. The provider capability table
 above is intentionally limited to operations that return an Expression.
@@ -737,11 +742,11 @@ uv pip install vane-ai
 
 | Provider | Prompt | Embed | Runtime and setup |
 | --- | :---: | :---: | --- |
-| `openai` | Yes | Yes | OpenAI API or an OpenAI-compatible endpoint; install `openai` and set `OPENAI_API_KEY` in the worker environment |
-| `google` | Yes | Yes | Google Generative AI; install `google-genai` and set `GOOGLE_API_KEY` in the worker environment |
-| `anthropic` | Yes | No | Anthropic Messages API; install `anthropic` and set `ANTHROPIC_API_KEY` in the worker environment |
-| `vllm` | Yes | No | Local or remote vLLM engine; install `vllm`, provide model access, and use Ray when GPU actors are required |
-| `transformers` | No | Yes | Local SentenceTransformers model; install `sentence-transformers`, `transformers`, and `torch` |
+| `openai` | Yes | Yes | OpenAI API or an OpenAI-compatible endpoint; install `vane-ai[openai]` and set `OPENAI_API_KEY` in the worker environment |
+| `google` | Yes | Yes | Google Generative AI; install `vane-ai[google]` and set `GOOGLE_API_KEY` in the worker environment |
+| `anthropic` | Yes | No | Anthropic Messages API; install `vane-ai[anthropic]` and set `ANTHROPIC_API_KEY` in the worker environment |
+| `vllm` | Yes | No | Local or remote vLLM engine; install `vane-ai[vllm]`, provide model access, and use Ray when GPU actors are required |
+| `transformers` | No | Yes | Local SentenceTransformers model; install `vane-ai[transformers]` |
 
 Set `provider` and `model` explicitly when reproducibility matters. Model IDs,
 limits, and availability belong to the configured endpoint, so choose a model
@@ -753,7 +758,7 @@ The examples below use the OpenAI provider. Install its client and expose the
 credential to the process that executes the query:
 
 ```bash
-uv pip install vane-ai openai
+uv pip install 'vane-ai[openai]'
 export OPENAI_API_KEY="<your-token>"
 
 # Optional: set this only for an OpenAI-compatible endpoint.
@@ -767,12 +772,14 @@ uses the official API root. For Ray jobs, set the variables and install the
 client on every worker that can execute the Expression.
 
 The examples below demonstrate the other supported form: passing the
-non-secret `base_url` explicitly in `struct_pack(...)` or
-`OpenAIProviderOptions`. Replace that value for a compatible service. An
-explicit option takes precedence over `OPENAI_BASE_URL`; when relying on the
-environment variable, omit the option from the Expression. In both forms, use
-the API root, typically ending in `/v1`, rather than an operation path such as
-`/chat/completions`.
+non-secret `base_url` explicitly in `struct_pack(...)` or as a Python keyword.
+Replace that value for a compatible service. An explicit option takes
+precedence over `OPENAI_BASE_URL`; when relying on the environment variable,
+omit the option from the Expression. In both forms, use the API root, typically
+ending in `/v1`, rather than an operation path such as `/chat/completions`.
+For a compatible endpoint that implements Chat Completions but not the OpenAI
+Responses API, also set `use_chat_completions := true` in SQL or
+`use_chat_completions=True` in Python.
 
 Keep the token in `OPENAI_API_KEY`. Never place it in SQL, a Python options
 object, notebook output, or a committed file. SQL binding rejects
@@ -781,9 +788,11 @@ credential-like option fields.
 ## 4. SQL Expression
 
 SQL is a compact default when the surrounding transformation is already a
-query. A Vane connection registers `ai_prompt` and `ai_embed`; the second
-argument is a constant options struct. Ray is Vane's default runner, and the
-examples' `show()` calls materialize the relation through RayRunner. Call
+query. A Vane connection registers `ai_prompt` and `ai_embed`; provider and
+model selection plus common operation settings are named arguments, while the
+`options` struct contains provider request and execution settings. Ray is Vane's
+default runner, and the examples' `show()` calls materialize the relation through
+RayRunner. Call
 `vane.configure(runner="ray")` before creating the connection only when you
 need to override an existing local runner setting.
 
@@ -807,14 +816,14 @@ prompted = con.sql("""
         text,
         ai_prompt(
             text,
-            struct_pack(
-                provider := 'openai',
-                model := 'gpt-4o-mini',
+            system_message := 'Write one short support summary. Return plain text only.',
+            provider := 'openai',
+            model := 'gpt-4o-mini',
+            options := struct_pack(
                 base_url := 'https://api.openai.com/v1',
-                system_message := 'Write one short support summary. Return plain text only.',
                 timeout := 60.0,
-                concurrency := 1,
-                max_api_concurrency := 4,
+                actor_number := 1,
+                max_concurrency_per_actor := 4,
                 max_output_tokens := 64,
                 temperature := 0.0
             )
@@ -826,8 +835,8 @@ prompted = con.sql("""
 prompted.show()
 ```
 
-`concurrency` selects the number of provider actors. For prompt calls,
-`max_api_concurrency` bounds simultaneous API requests inside each actor.
+`actor_number` selects the number of provider actors. For prompt calls,
+`max_concurrency_per_actor` bounds simultaneous API requests inside each actor.
 Start conservatively and raise either value only within the endpoint's rate
 and capacity limits.
 
@@ -840,13 +849,13 @@ embedded = con.sql("""
         text,
         ai_embed(
             text,
-            struct_pack(
-                provider := 'openai',
-                model := 'text-embedding-3-small',
+            provider := 'openai',
+            model := 'text-embedding-3-small',
+            options := struct_pack(
                 base_url := 'https://api.openai.com/v1',
                 encoding_format := 'float',
                 normalize := true,
-                concurrency := 1
+                actor_number := 1
             )
         ) AS embedding
     FROM documents
@@ -856,16 +865,17 @@ embedded = con.sql("""
 embedded.show()
 ```
 
-Without `dimensions`, the SQL result type is `FLOAT[]`. Set a positive
-`dimensions` value only when the selected embedding model supports that size;
-the result type then becomes fixed-size `FLOAT[n]`. `normalize := true`
-L2-normalizes each non-null vector.
+Every embedding Expression has a fixed-size `FLOAT[n]` result. Vane knows the
+default dimensions of supported official models. For an OpenAI-compatible
+endpoint, or when requesting a supported shortened embedding, pass a positive
+`dimensions := n` named argument explicitly. `normalize := true` L2-normalizes
+each non-null vector.
 
 ## 5. Python Expression
 
-Python Expression has the same output and execution contract. It separates
-provider configuration from operation-specific request options with typed
-objects.
+Python Expression has the same output and execution contract. Its closed
+keyword surface keeps provider, request, and execution options together and
+rejects unknown names.
 
 ```python
 import vane
@@ -886,16 +896,12 @@ prompted = documents.select(
         vane.col("text"),
         provider="openai",
         model="gpt-4o-mini",
-        provider_options=vane.ai.OpenAIProviderOptions(
-            base_url="https://api.openai.com/v1",
-            timeout=60.0,
-            concurrency=1,
-            max_api_concurrency=4,
-        ),
-        prompt_options=vane.ai.OpenAIPromptOptions(
-            max_output_tokens=64,
-            temperature=0.0,
-        ),
+        base_url="https://api.openai.com/v1",
+        timeout=60.0,
+        actor_number=1,
+        max_concurrency_per_actor=4,
+        max_output_tokens=64,
+        temperature=0.0,
         system_message="Write one short support summary. Return plain text only.",
     ).alias("summary"),
 ).order("document_id")
@@ -907,14 +913,10 @@ embedded = documents.select(
         vane.col("text"),
         provider="openai",
         model="text-embedding-3-small",
-        provider_options=vane.ai.OpenAIProviderOptions(
-            base_url="https://api.openai.com/v1",
-            timeout=60.0,
-            concurrency=1,
-        ),
-        embedding_options=vane.ai.OpenAIEmbeddingOptions(
-            encoding_format="float",
-        ),
+        base_url="https://api.openai.com/v1",
+        timeout=60.0,
+        actor_number=1,
+        encoding_format="float",
         normalize=True,
     ).alias("embedding"),
 ).order("document_id")
@@ -923,11 +925,10 @@ prompted.show()
 embedded.show()
 ```
 
-Use `OpenAIProviderOptions` for client and actor settings,
-`OpenAIPromptOptions` for generation settings, and
-`OpenAIEmbeddingOptions` for embedding request settings. Plain dictionaries
-are accepted too, but typed objects make provider-specific configuration
-clearer and catch misspelled fields earlier.
+The same keywords work in relation-returning calls such as
+`vane.ai.prompt(documents, vane.col("text"), ...)`. Keep credentials in the
+worker environment: credential-like option names are rejected rather than
+serialized into a plan.
 
 ## Overview
 
@@ -953,8 +954,8 @@ The base environment above is enough for MinHash deduplication and placeholder i
 | Common Crawl and Red Pajamas | `uv pip install torch sentence-transformers transformers` | Use the local-files-only option after `sentence-transformers/all-MiniLM-L6-v2` is cached; Common Crawl can skip embeddings |
 | Querying images | `uv pip install Pillow` | The OpenImages source also needs network access |
 | Image generation | None for the placeholder backend | Stable Diffusion needs `uv pip install diffusers transformers accelerate torch Pillow` |
-| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install openai` |
-| Multimodal structured outputs | `uv pip install openai pydantic` and a provider token | AI2D input additionally needs `uv pip install datasets Pillow` |
+| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]'` |
+| Multimodal structured outputs | `uv pip install 'vane-ai[openai]' pydantic` and a provider token | AI2D input additionally needs `uv pip install datasets Pillow` |
 
 For a CUDA-enabled workflow, install the PyTorch build that matches the operating system, GPU, and driver. The default PyPI build is not always the correct CUDA build.
 
@@ -970,7 +971,7 @@ Run these commands from the sparse checkout root. They use built-in or generated
 | Querying images | `python examples/querying_images.py --source sample --limit 5` | Image previews, masks, and `top_red_images.csv` under `examples/output/querying_images/` |
 | Image generation | `python examples/image_generation.py --source sample --limit 4` | Placeholder PNG files and `metadata.csv` under `examples/output/image_generation/` |
 | Voice AI analytics | `python examples/voice_ai_analytics.py --source sample --limit 3` | Summaries, subtitles, and segment embeddings under `examples/output/voice_ai_analytics/` |
-| Multimodal structured outputs | `python examples/multimodal_structured_outputs.py --source synthetic --limit 1 --skip-judge` | Evaluation rows in the terminal; set `HF_TOKEN` before using the default endpoint |
+| Multimodal structured outputs | `python examples/multimodal_structured_outputs.py --source synthetic --limit 1 --skip-judge` | Evaluation rows in the terminal; set `OPENAI_API_KEY` before using the default endpoint |
 
 The scripts leave the Vane runner unset, so the installed package default applies. Set `VANE_RUNNER=local` for the local runner, or leave it unset and set `RAY_ADDRESS` before launch to use an existing Ray cluster. Every worker needs the same example-specific packages and access to the same data, model cache, and credentials. The configured runner materializes the Relation workflow without changing the sample contract.
 
@@ -988,7 +989,7 @@ The scripts leave the Vane runner unset, so the installed package default applie
 
 ## Use cases
 
-These use cases combine multiple source systems, modality branches, or SQL-derived tables. Their pages focus on the core processing and decision path rather than operational scaffolding.
+These use cases combine multiple source systems, modality branches, or SQL-derived tables. Their pages focus on the core processing and decision path rather than operational scaffolding. Each one is a standalone project with its own pinned requirements; follow that project's setup instead of reusing the wheel-example environment above.
 
 | Use case | What you will build | Default scenario |
 | --- | --- | --- |
@@ -1104,12 +1105,12 @@ The orchestration first removes non-conversion records with SQL, then applies th
     pages = filtered.map_batches(
         decoder.__call__,
         schema={
-            "record_id": duckdb.sqltypes.VARCHAR,
-            "target_uri": duckdb.sqltypes.VARCHAR,
-            "warc_date": duckdb.sqltypes.VARCHAR,
-            "content_length": duckdb.sqltypes.BIGINT,
-            "language": duckdb.sqltypes.VARCHAR,
-            "text": duckdb.sqltypes.VARCHAR,
+            "record_id": vane.sqltypes.VARCHAR,
+            "target_uri": vane.sqltypes.VARCHAR,
+            "warc_date": vane.sqltypes.VARCHAR,
+            "content_length": vane.sqltypes.BIGINT,
+            "language": vane.sqltypes.VARCHAR,
+            "text": vane.sqltypes.VARCHAR,
         },
         batch_size=args.batch_size,
     ).query(
@@ -1204,21 +1205,21 @@ The default document cap is 1,000 characters and the default chunk cap is 1,024 
 
 ## 4. Generate embeddings
 
-The example uses Vane's Transformers provider. Because the AI function returns its output Relation separately, `append_embedding` validates row counts and the expected column before attaching embeddings to the original chunk rows.
+The example uses Vane's Transformers provider. The relation form of `embed` preserves the source columns and adds the requested embedding column, so materializing that Relation produces a table ready to write.
 
 ```python
     embedded_table = None
     if not args.skip_embeddings:
-        embedded_only = embed_text(
+        embedded = embed(
             chunks,
-            "text",
+            vane.col("text"),
             provider="transformers",
             model=args.embedding_model_id,
             output_column="embedding",
             max_chunk_chars=args.max_chunk_chars,
             batch_size=args.embedding_batch_size,
         )
-        embedded_table = append_embedding(chunks_table, embedded_only)
+        embedded_table = collect_relation(embedded)
 ```
 
 The model defaults to Sentence Transformers' `all-MiniLM-L6-v2`. Use the local-files-only option when the model is already cached and the worker must not contact Hugging Face. You can also skip this stage to inspect WARC decoding and chunking without model dependencies.
@@ -1586,19 +1587,19 @@ Both source branches produce the same four columns: a generated row ID, question
 Before embedding, the script can truncate long question text with SQL. The Vane AI function then embeds the `text` column with a Transformers model and returns an `embedding` column.
 
 ```python
-    embedded_only = embed_text(
+    embedded = embed(
         rel,
-        "text",
+        vane.col("text"),
         provider="transformers",
         model=args.model_id,
         output_column="embedding",
         max_chunk_chars=args.max_chunk_chars,
         batch_size=args.batch_size,
     )
-    embedded_table = append_embedding(collect_relation(rel), embedded_only)
+    embedded_table = collect_relation(embedded)
 ```
 
-The example validates that the embedding Relation has exactly as many rows as the input and contains the requested output column before attaching it. The default model is `sentence-transformers/all-MiniLM-L6-v2`; local-files-only mode prevents model downloads when the cache is already populated.
+The relation form preserves each question row and appends the requested embedding column. The default model is `sentence-transformers/all-MiniLM-L6-v2`; local-files-only mode prevents model downloads when the cache is already populated.
 
 ## 3. Match low-score and high-score questions
 
@@ -1780,15 +1781,15 @@ The UDF returns a new table rather than mutating input rows. That makes every ou
     analyzed = rel.map_batches(
         analyzer.__call__,
         schema={
-            "id": duckdb.sqltypes.BIGINT,
-            "path": duckdb.sqltypes.VARCHAR,
-            "size": duckdb.sqltypes.BIGINT,
-            "width": duckdb.sqltypes.BIGINT,
-            "height": duckdb.sqltypes.BIGINT,
-            "red_pixels": duckdb.sqltypes.BIGINT,
-            "red_fraction": duckdb.sqltypes.DOUBLE,
-            "preview_png": duckdb.sqltypes.BLOB,
-            "red_mask_png": duckdb.sqltypes.BLOB,
+            "id": vane.sqltypes.BIGINT,
+            "path": vane.sqltypes.VARCHAR,
+            "size": vane.sqltypes.BIGINT,
+            "width": vane.sqltypes.BIGINT,
+            "height": vane.sqltypes.BIGINT,
+            "red_pixels": vane.sqltypes.BIGINT,
+            "red_fraction": vane.sqltypes.DOUBLE,
+            "preview_png": vane.sqltypes.BLOB,
+            "red_mask_png": vane.sqltypes.BLOB,
         },
         batch_size=args.batch_size,
     )
@@ -2026,11 +2027,11 @@ The UDF returns all input metadata plus `generated_image` bytes. The call site d
 ```python
     map_kwargs: dict[str, Any] = {
         "schema": {
-            "id": duckdb.sqltypes.BIGINT,
-            "prompt": duckdb.sqltypes.VARCHAR,
-            "source_url": duckdb.sqltypes.VARCHAR,
-            "aesthetic_score": duckdb.sqltypes.DOUBLE,
-            "generated_image": duckdb.sqltypes.BLOB,
+            "id": vane.sqltypes.BIGINT,
+            "prompt": vane.sqltypes.VARCHAR,
+            "source_url": vane.sqltypes.VARCHAR,
+            "aesthetic_score": vane.sqltypes.DOUBLE,
+            "generated_image": vane.sqltypes.BLOB,
         },
         "batch_size": args.batch_size,
     }
@@ -2282,19 +2283,19 @@ def subtitle_rows(table: pa.Table, *, translated_language: str) -> list[dict[str
     return rows
 ```
 
-Vane's Transformers provider then embeds the original segment text. As in the other embedding examples, the helper validates row count and the output column before appending embeddings.
+Vane's Transformers provider then embeds the original segment text. The relation form preserves the subtitle columns and adds the embedding column.
 
 ```python
     subtitle_rel = relation_from_dicts(conn, subtitles)
-    embedded_only = embed_text(
+    embedded = embed(
         subtitle_rel,
-        "text",
+        vane.col("text"),
         provider="transformers",
         model=args.embedding_model_id,
         output_column="embedding",
         batch_size=args.embedding_batch_size,
     )
-    embedded_table = append_embedding(collect_relation(subtitle_rel), embedded_only)
+    embedded_table = collect_relation(embedded)
 ```
 
 ## 5. Inspect the outputs
@@ -2328,15 +2329,20 @@ The evaluation pipeline:
 4. Parses both answers, measures accuracy, and assigns a diagnostic quadrant.
 5. Optionally asks the vision-language model to diagnose failure rows.
 
-The default dataset is synthetic, but inference still uses an OpenAI-compatible model endpoint. By default that endpoint is the Hugging Face router and the API key is read from `HF_TOKEN`.
+The default dataset is synthetic, but inference still uses an OpenAI-compatible model endpoint. By default that endpoint is the Hugging Face router and the API key is read from `OPENAI_API_KEY` in the worker environment.
 
 ## 1. Define structured result contracts
 
-The choice response contains one answer letter. The judge response separates detailed reasoning, a concise hypothesis, and a coarse attribution. Pydantic models provide the structured-output contract when the selected endpoint supports SDK parsing.
+The choice response contains one answer letter. The judge response separates detailed reasoning, a concise hypothesis, and a coarse attribution. Pydantic models provide the structured-output contract when the selected endpoint supports SDK parsing. Import `BaseModel`, `ConfigDict`, and `Field` from `pydantic`; forbidding extra fields closes every object for OpenAI structured output.
 
 ```python
+from pydantic import BaseModel, ConfigDict, Field
+
+
 class ChoiceResponse(BaseModel):
     """Structured answer for a multiple-choice question."""
+
+    model_config = ConfigDict(extra="forbid")
 
     choice: str = Field(
         ...,
@@ -2346,6 +2352,8 @@ class ChoiceResponse(BaseModel):
 
 class JudgeResponse(BaseModel):
     """Structured diagnostic feedback for a failed example."""
+
+    model_config = ConfigDict(extra="forbid")
 
     reasoning: str = Field(..., description="Why the model likely answered that way.")
     hypothesis: str = Field(..., description="A concise cause of the error.")
@@ -2397,10 +2405,9 @@ Common provider options are assembled once so the vision, text-only, and judge c
     common_prompt_options = {
         "provider": "openai",
         "model": args.model,
-        "api_key": api_key,
         "use_chat_completions": True,
         "temperature": args.temperature,
-        "max_tokens": args.max_tokens,
+        "max_output_tokens": args.max_tokens,
     }
     if base_url:
         common_prompt_options["base_url"] = base_url
@@ -2408,20 +2415,13 @@ Common provider options are assembled once so the vision, text-only, and judge c
     choice_return_format = ChoiceResponse if args.structured_output_mode == "parse" else None
     judge_return_format = JudgeResponse if args.structured_output_mode == "parse" else None
 
-    with_image_responses = prompt(
+    with_image = prompt(
         rel,
-        "question",
-        image_columns=["image"],
+        [vane.col("question"), vane.col("image")],
         system_message=VISION_SYSTEM_PROMPT,
         return_format=choice_return_format,
         output_column="response_with_image",
         **common_prompt_options,
-    )
-    with_image = append_prompt_output(
-        conn,
-        rel,
-        with_image_responses,
-        "response_with_image",
     )
     eval_with_image = add_choice_eval(
         with_image,
@@ -2431,26 +2431,20 @@ Common provider options are assembled once so the vision, text-only, and judge c
     )
 ```
 
-`append_prompt_output` checks the output row count and requested column before attaching results to the source Relation by position. This catches missing or extra rows and missing output columns; it does not independently verify row order.
+The relation form of `prompt` preserves every source column and appends `response_with_image`, so the evaluation step can consume the structured response without reattaching rows by position.
 
 ## 4. Repeat the question without the image
 
-The ablation uses the already enriched Relation but does not pass `image_columns`. It writes to a separate response column and applies the same answer-normalization logic.
+The ablation uses the already enriched Relation but passes only the question Expression. It writes to a separate response column and applies the same answer-normalization logic.
 
 ```python
-    without_image_responses = prompt(
+    without_image = prompt(
         eval_with_image,
-        "question",
+        vane.col("question"),
         system_message=TEXT_ONLY_SYSTEM_PROMPT,
         return_format=choice_return_format,
         output_column="response_without_image",
         **common_prompt_options,
-    )
-    without_image = append_prompt_output(
-        conn,
-        eval_with_image,
-        without_image_responses,
-        "response_without_image",
     )
     evaluated = add_choice_eval(
         without_image,
@@ -2500,21 +2494,14 @@ The script prints accuracy with the image, accuracy without it, and the delta, f
 Unless the judge stage is skipped, only Image Hurt and Both Incorrect rows proceed. The script constructs a diagnostic prompt containing the question, correct answer, and both model choices, then includes the image again for the judge.
 
 ```python
-    judge_responses = prompt(
+    judged = prompt(
         judge_input,
-        "judge_prompt",
-        image_columns=["image"],
+        [vane.col("judge_prompt"), vane.col("image")],
         system_message=JUDGE_SYSTEM_PROMPT,
         return_format=judge_return_format,
         output_column="judge_response",
-        max_tokens=args.judge_max_tokens,
-        **{key: value for key, value in common_prompt_options.items() if key != "max_tokens"},
-    )
-    judged = append_prompt_output(
-        conn,
-        judge_input,
-        judge_responses,
-        "judge_response",
+        max_output_tokens=args.judge_max_tokens,
+        **{key: value for key, value in common_prompt_options.items() if key != "max_output_tokens"},
     )
 ```
 
@@ -2522,7 +2509,7 @@ The final preview extracts attribution, hypothesis, and reasoning from the judge
 
 ## Provider and execution choices
 
-The default model is `Qwen/Qwen3-VL-8B-Instruct` through the Hugging Face OpenAI-compatible router. The base URL, API-key environment variable, model, temperature, token limits, and structured-output mode are configurable. Execution follows Vane's configured runner; with Ray, workers need network access to the endpoint and the same Vane AI dependencies.
+The default model is `Qwen/Qwen3-VL-8B-Instruct` through the Hugging Face OpenAI-compatible router. The base URL, model, temperature, token limits, and structured-output mode are configurable; credentials stay in `OPENAI_API_KEY` instead of being serialized into the plan. Parse mode requires a vision model and endpoint that support OpenAI-style JSON Schema structured outputs. Execution follows Vane's configured runner; with Ray, workers need network access to the endpoint and the same Vane AI dependencies.
 
 See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/multimodal_structured_outputs.py) for image normalization, AI2D loading, answer parsing, metric queries, and every argument.
 
@@ -3804,8 +3791,9 @@ If a Ray cluster already exists, skip the startup commands and use its address w
 If no cluster exists, start the head node first:
 
 ```bash
+HEAD_IP="10.0.0.10" # Replace with the head node's reachable IP.
 ray start --head \
-  --node-ip-address=<HEAD_IP> \
+  --node-ip-address="${HEAD_IP}" \
   --port=6379 \
   --dashboard-host=0.0.0
 ```
@@ -3813,9 +3801,11 @@ ray start --head \
 Then join each worker node to it:
 
 ```bash
+HEAD_IP="10.0.0.10" # Use the same head-node IP as above.
+WORKER_IP="10.0.0.11" # Replace on each worker.
 ray start \
-  --address=<HEAD_IP>:6379 \
-  --node-ip-address=<WORKER_IP>
+  --address="${HEAD_IP}:6379" \
+  --node-ip-address="${WORKER_IP}"
 ```
 
 Create the Vane job without an explicit runner setting because Ray is already the default:

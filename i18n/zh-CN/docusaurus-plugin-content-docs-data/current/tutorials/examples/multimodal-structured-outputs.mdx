@@ -12,15 +12,20 @@ title: 多模态结构化输出
 4. 解析两个答案、计算准确率并分配诊断象限。
 5. 可选地让视觉语言模型诊断失败数据行。
 
-默认数据集是合成的，但推理仍然使用 OpenAI 兼容的模型端点。默认端点是 Hugging Face 路由服务，API key 从 `HF_TOKEN` 读取。
+默认数据集是合成的，但推理仍然使用 OpenAI 兼容的模型端点。默认端点是 Hugging Face 路由服务，API key 从 worker 环境中的 `OPENAI_API_KEY` 读取。
 
 ## 1. 定义结构化结果契约
 
-选择题响应包含一个答案字母。诊断响应把详细推理、简短假设和粗粒度归因分开。所选端点支持 SDK 解析时，Pydantic 模型会提供结构化输出契约。
+选择题响应包含一个答案字母。诊断响应把详细推理、简短假设和粗粒度归因分开。所选端点支持 SDK 解析时，Pydantic 模型会提供结构化输出契约。请从 `pydantic` 导入 `BaseModel`、`ConfigDict` 和 `Field`；禁止额外字段会为 OpenAI 结构化输出关闭每个 object。
 
 ```python
+from pydantic import BaseModel, ConfigDict, Field
+
+
 class ChoiceResponse(BaseModel):
     """Structured answer for a multiple-choice question."""
+
+    model_config = ConfigDict(extra="forbid")
 
     choice: str = Field(
         ...,
@@ -30,6 +35,8 @@ class ChoiceResponse(BaseModel):
 
 class JudgeResponse(BaseModel):
     """Structured diagnostic feedback for a failed example."""
+
+    model_config = ConfigDict(extra="forbid")
 
     reasoning: str = Field(..., description="Why the model likely answered that way.")
     hypothesis: str = Field(..., description="A concise cause of the error.")
@@ -81,10 +88,9 @@ AI2D 输入从 Hugging Face 流式读取数据行，取得第一轮用户和助�
     common_prompt_options = {
         "provider": "openai",
         "model": args.model,
-        "api_key": api_key,
         "use_chat_completions": True,
         "temperature": args.temperature,
-        "max_tokens": args.max_tokens,
+        "max_output_tokens": args.max_tokens,
     }
     if base_url:
         common_prompt_options["base_url"] = base_url
@@ -92,20 +98,13 @@ AI2D 输入从 Hugging Face 流式读取数据行，取得第一轮用户和助�
     choice_return_format = ChoiceResponse if args.structured_output_mode == "parse" else None
     judge_return_format = JudgeResponse if args.structured_output_mode == "parse" else None
 
-    with_image_responses = prompt(
+    with_image = prompt(
         rel,
-        "question",
-        image_columns=["image"],
+        [vane.col("question"), vane.col("image")],
         system_message=VISION_SYSTEM_PROMPT,
         return_format=choice_return_format,
         output_column="response_with_image",
         **common_prompt_options,
-    )
-    with_image = append_prompt_output(
-        conn,
-        rel,
-        with_image_responses,
-        "response_with_image",
     )
     eval_with_image = add_choice_eval(
         with_image,
@@ -115,26 +114,20 @@ AI2D 输入从 Hugging Face 流式读取数据行，取得第一轮用户和助�
     )
 ```
 
-`append_prompt_output` 会在按位置把结果接回源 Relation 之前，检查输出行数和请求的列。这样可以发现多行、少行或缺少输出列的情况，但不能独立验证行顺序。
+Relation 形式的 `prompt` 会保留所有源列并新增 `response_with_image`，因此评估阶段可以直接使用结构化响应，不需要再按位置接回数据行。
 
 ## 4. 不带图像重复提问
 
-消融阶段使用已经扩充的 Relation，但不传 `image_columns`。它写入单独的响应列，并应用相同的答案规范化逻辑。
+消融阶段使用已经扩充的 Relation，但只传入问题 Expression。它写入单独的响应列，并应用相同的答案规范化逻辑。
 
 ```python
-    without_image_responses = prompt(
+    without_image = prompt(
         eval_with_image,
-        "question",
+        vane.col("question"),
         system_message=TEXT_ONLY_SYSTEM_PROMPT,
         return_format=choice_return_format,
         output_column="response_without_image",
         **common_prompt_options,
-    )
-    without_image = append_prompt_output(
-        conn,
-        eval_with_image,
-        without_image_responses,
-        "response_without_image",
     )
     evaluated = add_choice_eval(
         without_image,
@@ -184,21 +177,14 @@ def classify_quadrants(rel: Any) -> Any:
 除非跳过 `judge` 诊断阶段，否则只有 Image Hurt 和 Both Incorrect 行会继续。脚本构造一个包含问题、正确答案以及两次模型选项的诊断提示，再次把图像提供给诊断模型。
 
 ```python
-    judge_responses = prompt(
+    judged = prompt(
         judge_input,
-        "judge_prompt",
-        image_columns=["image"],
+        [vane.col("judge_prompt"), vane.col("image")],
         system_message=JUDGE_SYSTEM_PROMPT,
         return_format=judge_return_format,
         output_column="judge_response",
-        max_tokens=args.judge_max_tokens,
-        **{key: value for key, value in common_prompt_options.items() if key != "max_tokens"},
-    )
-    judged = append_prompt_output(
-        conn,
-        judge_input,
-        judge_responses,
-        "judge_response",
+        max_output_tokens=args.judge_max_tokens,
+        **{key: value for key, value in common_prompt_options.items() if key != "max_output_tokens"},
     )
 ```
 
@@ -206,6 +192,6 @@ def classify_quadrants(rel: Any) -> Any:
 
 ## 模型服务与执行方式
 
-默认通过 Hugging Face 的 OpenAI 兼容路由服务访问 `Qwen/Qwen3-VL-8B-Instruct`。基础 URL、API key 环境变量、模型、temperature、token 上限和结构化输出模式都可配置。执行方式由 Vane 配置的 runner 决定；使用 Ray 时，执行节点需要能访问模型端点，并安装相同的 Vane AI 依赖。
+默认通过 Hugging Face 的 OpenAI 兼容路由服务访问 `Qwen/Qwen3-VL-8B-Instruct`。基础 URL、模型、temperature、token 上限和结构化输出模式都可配置；凭据保存在 `OPENAI_API_KEY` 中，不会被序列化进 plan。Parse 模式要求视觉模型及其 endpoint 支持 OpenAI 风格的 JSON Schema 结构化输出。执行方式由 Vane 配置的 runner 决定；使用 Ray 时，执行节点需要能访问模型端点，并安装相同的 Vane AI 依赖。
 
 图像规范化、AI2D 加载、答案解析、指标查询以及全部参数请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/multimodal_structured_outputs.py)。
