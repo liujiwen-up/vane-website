@@ -2,7 +2,7 @@
 title: Semantic Search on Red Pajamas
 ---
 
-StackExchange contains many lower-scoring questions even when a closely related, higher-scoring question already exists. This tutorial follows [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py) to build a compact semantic-matching pipeline with Vane.
+StackExchange contains many lower-scoring questions even when a closely related, higher-scoring question already exists. This tutorial follows [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py) to build a compact semantic-matching pipeline with Vane.
 
 You will:
 
@@ -154,4 +154,4 @@ When an output path is supplied, the same full match rows are written to CSV. Th
 
 The dataset load and similarity loop are intentionally straightforward for a tutorial. The configured Vane runner materializes the embedding workflow, while the all-pairs ranking stays in process after collection. For a much larger candidate set, replace that ranking with a vector index or a partitioned similarity strategy while preserving the row schema shown here.
 
-See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py) for sample rows, output serialization, and every argument.
+See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py) for sample rows, output serialization, and every argument.

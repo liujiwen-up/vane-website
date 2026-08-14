@@ -2,7 +2,7 @@
 export const GITHUB_REPO = 'AstroVela/vane'
 export const GITHUB_URL = `https://github.com/${GITHUB_REPO}`
 export const BENCHMARK_WORKFLOW_URL = `${GITHUB_URL}/tree/main/multimodal_inference_benchmarks`
-export const vaneSourceFileUrl = (path: string) => `${GITHUB_URL}/blob/main/${path}`
+export const vaneSourceFileUrl = (path: string) => `${GITHUB_URL}/blob/v0.1.0/${path}`
 export const DOCS_EDIT_BASE_URL = 'https://github.com/AstroVela/vane-website/edit/main'
 
 // Community Discord invite.

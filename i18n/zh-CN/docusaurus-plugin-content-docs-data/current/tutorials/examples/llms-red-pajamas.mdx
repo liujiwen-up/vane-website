@@ -2,7 +2,7 @@
 title: Red Pajamas 语义检索
 ---
 
-StackExchange 上有很多得分较低的问题，同时站内已经存在高度相关、得分更高的问题。本教程沿着 [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py)，使用 Vane 构建一条紧凑的语义匹配流程。
+StackExchange 上有很多得分较低的问题，同时站内已经存在高度相关、得分更高的问题。本教程沿着 [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py)，使用 Vane 构建一条紧凑的语义匹配流程。
 
 你将完成：
 
@@ -154,4 +154,4 @@ def semantic_matches(
 
 为了便于教学，数据加载与相似度循环采用直接实现。配置的 Vane runner 会物化嵌入工作流，而全量配对会在收集结果后留在进程内执行。面对大得多的候选集，可以用向量索引或分区相似度策略替换该配对过程，同时保留这里展示的数据结构。
 
-样例行、输出序列化以及全部参数请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py)。
+样例行、输出序列化以及全部参数请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py)。

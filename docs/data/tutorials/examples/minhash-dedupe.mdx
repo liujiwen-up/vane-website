@@ -2,7 +2,7 @@
 title: MinHash Text Deduplication
 ---
 
-Duplicate and near-duplicate text can distort training corpora, retrieval indexes, and analytics. This tutorial follows [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py) through a complete, dependency-light deduplication pipeline: normalize text, compute MinHash signatures, use locality-sensitive hashing to generate candidate pairs, verify those pairs, and keep one representative per connected component.
+Duplicate and near-duplicate text can distort training corpora, retrieval indexes, and analytics. This tutorial follows [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py) through a complete, dependency-light deduplication pipeline: normalize text, compute MinHash signatures, use locality-sensitive hashing to generate candidate pairs, verify those pairs, and keep one representative per connected component.
 
 The script accepts built-in text blocks, a CSV file, or text extracted from local HTML files. Its default sample includes exact duplicates, punctuation and case variants, unrelated text, and short boilerplate, so you can inspect the behavior without downloading a web corpus.
 
@@ -273,4 +273,4 @@ The output directory contains six complementary views:
 
 The terminal summary reports input rows, the chosen LSH shape, collision buckets, candidate pairs, removed duplicates, and the percentage kept. Use the candidate and cluster files together when tuning the threshold: one explains why an edge exists, while the other shows the transitive effect of those edges.
 
-See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py) for CSV and HTML loading, probability integration, and output serialization.
+See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py) for CSV and HTML loading, probability integration, and output serialization.

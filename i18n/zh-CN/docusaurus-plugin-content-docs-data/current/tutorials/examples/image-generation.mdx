@@ -2,7 +2,7 @@
 title: 从文本生成图像
 ---
 
-当提示词、模型配置、二进制输出和元数据需要在大量数据行中保持对齐时，文生图就成了数据处理流程问题。本教程沿着 [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py)，使用 Vane 批量 UDF 构建这条处理流程。
+当提示词、模型配置、二进制输出和元数据需要在大量数据行中保持对齐时，文生图就成了数据处理流程问题。本教程沿着 [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py)，使用 Vane 批量 UDF 构建这条处理流程。
 
 脚本提供两个相互独立的选择：
 
@@ -213,4 +213,4 @@ UDF 返回全部输入元数据以及 `generated_image` 字节。调用处声明
 
 命令行默认使用 512×512 输出和 20 个扩散推理步骤；执行方式由 Vane 配置的 runner 决定。占位后端会忽略仅与扩散模型有关的设置。进行真实推理时，请选择 Diffusers 后端，确保每个执行节点都能访问模型，选择合适精度，并显式请求 GPU 资源。
 
-完整 UDF 构造器、样例提示词生成、文件命名与全部运行参数请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py)。
+完整 UDF 构造器、样例提示词生成、文件命名与全部运行参数请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py)。

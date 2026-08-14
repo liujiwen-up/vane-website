@@ -2,7 +2,7 @@
 title: MinHash 文本去重
 ---
 
-重复和近似重复文本会扭曲训练语料、检索索引和分析结果。本教程沿着 [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py) 完成一条依赖较少的完整去重流程：规范化文本、计算 MinHash 签名、用局部敏感哈希生成候选对、验证候选对，再为每个连通分量保留一个代表行。
+重复和近似重复文本会扭曲训练语料、检索索引和分析结果。本教程沿着 [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py) 完成一条依赖较少的完整去重流程：规范化文本、计算 MinHash 签名、用局部敏感哈希生成候选对、验证候选对，再为每个连通分量保留一个代表行。
 
 脚本接受内置文本块、CSV 文件或从本地 HTML 文件提取的文本。默认样例同时包含完全重复、标点与大小写变体、无关文本和短样板内容，因此无需下载网页语料就能检查算法行为。
 
@@ -273,4 +273,4 @@ class UnionFind:
 
 终端摘要会报告输入行数、选定的 LSH 形状、碰撞 bucket 数量、候选对数量、移除的重复行和保留比例。调节阈值时，应结合候选文件与簇文件：前者解释某条边为何存在，后者展示这些边的传递影响。
 
-CSV 与 HTML 加载、概率积分和结果序列化的完整实现请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py)。
+CSV 与 HTML 加载、概率积分和结果序列化的完整实现请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py)。

@@ -2,7 +2,7 @@
 title: 查询图像数据
 ---
 
-图像处理通常从表格元数据开始，但在回答视觉问题之前，需要先解码二进制对象。本教程沿着 [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py) 查找红色区域最大的图像，同时把路径、文件大小、尺寸、预览字节和掩码保留在同一个 Vane Relation 中。
+图像处理通常从表格元数据开始，但在回答视觉问题之前，需要先解码二进制对象。本教程沿着 [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py) 查找红色区域最大的图像，同时把路径、文件大小、尺寸、预览字节和掩码保留在同一个 Vane Relation 中。
 
 脚本可以读取三类数据源：
 
@@ -170,4 +170,4 @@ def save_outputs(table: pa.Table, output_dir: Path, top_k: int) -> pa.Table:
 
 保留数据源 Relation 和输出契约，再把 `magic_red_detector` 替换为任务所需的视觉规则或模型即可。如果评审人员既需要可排序的分数，也需要对分数的视觉解释，那么同时返回派生字节与标量指标会非常实用。
 
-样例图像生成、本地 glob 加载与公开 OpenImages 列表路径请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py)。
+样例图像生成、本地 glob 加载与公开 OpenImages 列表路径请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py)。

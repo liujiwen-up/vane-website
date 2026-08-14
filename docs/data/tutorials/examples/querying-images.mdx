@@ -2,7 +2,7 @@
 title: Querying Image Data
 ---
 
-Image workflows often begin with tabular metadata but need to decode binary objects before they can answer visual questions. This tutorial follows [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py) to find the images with the largest red regions, while keeping paths, file sizes, dimensions, preview bytes, and masks in one Vane Relation.
+Image workflows often begin with tabular metadata but need to decode binary objects before they can answer visual questions. This tutorial follows [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py) to find the images with the largest red regions, while keeping paths, file sizes, dimensions, preview bytes, and masks in one Vane Relation.
 
 The script can read three sources:
 
@@ -170,4 +170,4 @@ The default output directory contains an `images` directory, a `masks` directory
 
 Keep the source Relation and output contract, then replace `magic_red_detector` with the visual rule or model needed by your task. Returning derived bytes alongside scalar metrics is useful when reviewers need both a sortable score and a visual explanation of that score.
 
-See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py) for sample-image generation, local glob loading, and the public OpenImages listing path.
+See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py) for sample-image generation, local glob loading, and the public OpenImages listing path.

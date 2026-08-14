@@ -2,7 +2,7 @@
 title: Working with Common Crawl
 ---
 
-Common Crawl is useful for search, retrieval, and model-training pipelines, but its WET files still need to be decoded, filtered, and divided into model-sized units. This tutorial follows [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py) from raw WARC-shaped records to page, chunk, and embedding outputs.
+Common Crawl is useful for search, retrieval, and model-training pipelines, but its WET files still need to be decoded, filtered, and divided into model-sized units. This tutorial follows [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py) from raw WARC-shaped records to page, chunk, and embedding outputs.
 
 The default path is deliberately small and offline-friendly. It uses built-in records with the same columns as the real WET path, so the transformation stages stay identical when you later point the script at a local file or URL.
 
@@ -229,4 +229,4 @@ The script prints the number of source records, decoded pages, chunks, and embed
 
 The script materializes each Relation through Vane's configured runner. Use `VANE_RUNNER=local` while validating schemas locally, or leave it unset and configure `RAY_ADDRESS` for Ray execution. The source-loading and output contracts do not change.
 
-See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py) for every argument and the WET parser implementation.
+See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py) for every argument and the WET parser implementation.

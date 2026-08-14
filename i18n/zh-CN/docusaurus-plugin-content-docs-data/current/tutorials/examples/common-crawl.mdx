@@ -2,7 +2,7 @@
 title: 处理 Common Crawl 数据
 ---
 
-Common Crawl 很适合搜索、检索和模型训练流程，但 WET 文件仍需经过解码、过滤，并被切分成适合模型处理的单元。本教程沿着 [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py) 的主线，从原始 WARC 结构记录一直走到页面、文本块与嵌入产物。
+Common Crawl 很适合搜索、检索和模型训练流程，但 WET 文件仍需经过解码、过滤，并被切分成适合模型处理的单元。本教程沿着 [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py) 的主线，从原始 WARC 结构记录一直走到页面、文本块与嵌入产物。
 
 默认输入刻意保持小巧，并且适合离线运行。它使用与真实 WET 输入相同列结构的内置记录，因此以后切换到本地文件或 URL 时，转换阶段无需改变。
 
@@ -229,4 +229,4 @@ class ChunkTextBatch:
 
 脚本通过 Vane 配置的 runner 物化每个 Relation。可以设置 `VANE_RUNNER=local` 在本地验证 schema；使用 Ray 时则保持 runner 未设置并配置 `RAY_ADDRESS`。数据加载与输出契约保持不变。
 
-所有参数与 WET 解析实现请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py)。
+所有参数与 WET 解析实现请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py)。
