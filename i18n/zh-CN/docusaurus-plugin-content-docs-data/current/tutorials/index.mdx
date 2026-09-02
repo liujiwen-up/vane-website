@@ -8,7 +8,7 @@ title: 概览
 
 ## 运行示例脚本
 
-先按照[安装](/zh-CN/docs/data/quickstart/installation)页面创建环境并安装 Vane。只下载 `main` 分支的当前可运行脚本时，可以使用 `git clone --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`，然后执行 `cd vane-examples` 和 `git sparse-checkout set examples`。通过 `uv pip install vane-ai numpy pyarrow` 安装通用运行依赖，再按下表补充示例专用依赖。
+先按照[安装](/zh-CN/docs/data/quickstart/installation)页面创建环境并安装已发布的 Vane wheel。只下载 0.1.0 可运行脚本时，可以使用 `git clone --branch v0.1.0 --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`，然后执行 `cd vane-examples` 和 `git sparse-checkout set examples`。通过 `uv pip install vane-ai==0.1.0 numpy pyarrow` 安装匹配版本的 wheel 和通用运行依赖，再按下表补充示例专用依赖。
 
 Sparse checkout 不会把 `vane/` 和 `duckdb/` 源码目录放入工作区，因此示例脚本和本地 Ray worker 会导入已安装的 wheel，而不是相邻的源码副本。
 
@@ -21,8 +21,8 @@ Sparse checkout 不会把 `vane/` 和 `duckdb/` 源码目录放入工作区，�
 | Common Crawl 与 Red Pajamas | `uv pip install torch sentence-transformers transformers` | 缓存 `sentence-transformers/all-MiniLM-L6-v2` 后可启用仅本地文件选项；Common Crawl 也可以跳过嵌入阶段 |
 | 查询图像 | `uv pip install Pillow` | OpenImages 数据源还需要网络访问 |
 | 图像生成 | 占位后端无需额外依赖 | Stable Diffusion 需要 `uv pip install diffusers transformers accelerate torch Pillow` |
-| 语音 AI 分析 | `uv pip install torch sentence-transformers transformers` | Faster-Whisper 需要 `uv pip install faster-whisper av`；OpenAI 摘要需要 `uv pip install 'vane-ai[openai]'` |
-| 基础 Prompt | `uv pip install 'vane-ai[openai]'` 和 `OPENAI_API_KEY` | 使用 OpenAI-compatible API 根地址时设置 `OPENAI_BASE_URL` |
+| 语音 AI 分析 | `uv pip install torch sentence-transformers transformers` | Faster-Whisper 需要 `uv pip install faster-whisper av`；OpenAI 摘要需要 `uv pip install 'vane-ai[openai]==0.1.0'` |
+| 基础 Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` 和 `OPENAI_API_KEY` | 使用 OpenAI-compatible API 根地址时设置 `OPENAI_BASE_URL` |
 
 使用 CUDA 工作流时，请安装与操作系统、GPU 和驱动匹配的 PyTorch build。PyPI 默认包不一定是适合当前机器的 CUDA build。
 
@@ -72,4 +72,4 @@ Sparse checkout 不会把 `vane/` 和 `duckdb/` 源码目录放入工作区，�
 
 ## 代码来源
 
-这些页面中的每个代码块都复制自对应的源码项目。示例使用 Vane 仓库 `main` 分支下 `examples/` 目录中的文件，用例使用 `demo-scene` 仓库中同名目录下的文件。正文只负责解释和串联这些片段，可运行项目始终是最终依据。
+这些页面中的每个代码块都复制自对应的源码项目。示例使用 Vane `v0.1.0` tag 下 `examples/` 目录中的文件，用例使用 `demo-scene` 仓库中同名目录下的文件。正文只负责解释和串联这些片段，可运行项目始终是最终依据。

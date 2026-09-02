@@ -8,7 +8,7 @@ Most scripts default to small, self-contained sample data. You can understand th
 
 ## Run the example scripts
 
-Follow [Installation](/docs/data/quickstart/installation) to create an environment and install Vane. To download only the current runnable scripts from `main`, use `git clone --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`, then run `cd vane-examples` and `git sparse-checkout set examples`. Install the common runtime packages with `uv pip install vane-ai numpy pyarrow`, and add the example-specific dependencies listed below.
+Follow [Installation](/docs/data/quickstart/installation) to create an environment and install the published Vane wheel. To download only the 0.1.0 runnable scripts, use `git clone --branch v0.1.0 --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`, then run `cd vane-examples` and `git sparse-checkout set examples`. Install the matching wheel and common runtime packages with `uv pip install vane-ai==0.1.0 numpy pyarrow`, and add the example-specific dependencies listed below.
 
 The sparse checkout keeps the `vane/` and `duckdb/` source directories out of the working tree, so the scripts and local Ray workers import the installed wheel rather than a neighboring source checkout.
 
@@ -21,8 +21,8 @@ The base environment above is enough for MinHash deduplication and placeholder i
 | Common Crawl and Red Pajamas | `uv pip install torch sentence-transformers transformers` | Use the local-files-only option after `sentence-transformers/all-MiniLM-L6-v2` is cached; Common Crawl can skip embeddings |
 | Querying images | `uv pip install Pillow` | The OpenImages source also needs network access |
 | Image generation | None for the placeholder backend | Stable Diffusion needs `uv pip install diffusers transformers accelerate torch Pillow` |
-| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]'` |
-| Basic Prompt | `uv pip install 'vane-ai[openai]'` and `OPENAI_API_KEY` | Set `OPENAI_BASE_URL` to use an OpenAI-compatible API root |
+| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]==0.1.0'` |
+| Basic Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` and `OPENAI_API_KEY` | Set `OPENAI_BASE_URL` to use an OpenAI-compatible API root |
 
 For a CUDA-enabled workflow, install the PyTorch build that matches the operating system, GPU, and driver. The default PyPI build is not always the correct CUDA build.
 
@@ -72,4 +72,4 @@ Start with Common Crawl or Red Pajamas for text and embedding workflows. The com
 
 ## Code provenance
 
-Every fenced code block on these pages is copied from its corresponding source project. The examples use files under `examples/` on the Vane repository's `main` branch; the use cases use their named directories in the `demo-scene` repository. The prose explains and connects those excerpts, while the runnable project remains the source of truth.
+Every fenced code block on these pages is copied from its corresponding source project. The examples use files under `examples/` in the Vane `v0.1.0` tag; the use cases use their named directories in the `demo-scene` repository. The prose explains and connects those excerpts, while the runnable project remains the source of truth.

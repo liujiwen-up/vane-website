@@ -336,8 +336,7 @@ test('wheel-backed examples document sparse checkout and bounded commands', () =
   ]
 
   for (const source of wheelExampleSources) {
-    assert.match(source, /git clone --depth 1 --filter=blob:none --sparse/)
-    assert.doesNotMatch(source, /git clone --branch/)
+    assert.match(source, /git clone --branch v0\.1\.0 --depth 1 --filter=blob:none --sparse/)
     assert.match(source, /https:\/\/github\.com\/AstroVela\/vane\.git vane-examples/)
     assert.match(source, /cd vane-examples/)
     assert.match(source, /git sparse-checkout set examples/)
