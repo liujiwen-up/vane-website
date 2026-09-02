@@ -2,12 +2,12 @@
 title: 基础 Prompt
 ---
 
-当每条文本或图像请求都必须与来源行保持关联时，Prompt 就成为一种数据操作。本教程沿着 [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py)，介绍 Vane 0.1.0 正式发布的 Prompt 用法：纯文本结果、结构化输出、原始 provider 响应和 SQL。
+当每条文本或图像请求都必须与来源行保持关联时，Prompt 就成为一种数据操作。本教程沿着 [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py)，介绍 Vane 当前的 Prompt 用法：纯文本结果、结构化输出、原始 provider 响应和 SQL。
 
 示例会读取仓库自带的 `examples/example.png`，并向 OpenAI provider 发起请求。先安装 provider extra，并把凭据提供给实际执行 Relation 的进程：
 
 ```bash
-uv pip install 'vane-ai[openai]==0.1.0'
+uv pip install 'vane-ai[openai]'
 export OPENAI_API_KEY="<your-token>"
 ```
 
@@ -130,4 +130,4 @@ connection.sql(
 
 在 Python 中组合 Relation 与 Expression 时使用 Python 形式；周围流程已经是 query 时使用 SQL overload。两种形式都会从 worker 环境读取相同的 provider 凭据。
 
-完整实现请查看 [0.1.0 源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py)及其自带的 [`example.png`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/example.png)。
+完整实现请查看[源码](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py)及其自带的 [`example.png`](https://github.com/AstroVela/vane/blob/main/examples/example.png)。

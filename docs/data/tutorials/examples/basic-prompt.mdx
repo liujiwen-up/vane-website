@@ -2,12 +2,12 @@
 title: Basic Prompt
 ---
 
-Prompting becomes a data operation when every text or image request must stay attached to its source row. This tutorial follows [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py) through the Prompt surfaces published in Vane 0.1.0: plain text, structured output, raw provider responses, and SQL.
+Prompting becomes a data operation when every text or image request must stay attached to its source row. This tutorial follows [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py) through Vane's current Prompt surfaces: plain text, structured output, raw provider responses, and SQL.
 
 The example reads the bundled `examples/example.png` file and sends requests to the OpenAI provider. Install the provider extra and expose the credential to the process that executes the relation:
 
 ```bash
-uv pip install 'vane-ai[openai]==0.1.0'
+uv pip install 'vane-ai[openai]'
 export OPENAI_API_KEY="<your-token>"
 ```
 
@@ -130,4 +130,4 @@ connection.sql(
 
 Use the Python form when composing Relations and Expressions in Python, and the SQL overload when the surrounding pipeline is already a query. Both forms use the same provider credentials from the worker environment.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py) and its bundled [`example.png`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/example.png).
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py) and its bundled [`example.png`](https://github.com/AstroVela/vane/blob/main/examples/example.png).

@@ -941,7 +941,7 @@ Most scripts default to small, self-contained sample data. You can understand th
 
 ## Run the example scripts
 
-Follow [Installation](/docs/data/quickstart/installation) to create an environment and install the published Vane wheel. To download only the 0.1.0 runnable scripts, use `git clone --branch v0.1.0 --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`, then run `cd vane-examples` and `git sparse-checkout set examples`. Install the matching wheel and common runtime packages with `uv pip install vane-ai==0.1.0 numpy pyarrow`, and add the example-specific dependencies listed below.
+Follow [Installation](/docs/data/quickstart/installation) to create an environment and install Vane. To download only the current runnable scripts from `main`, use `git clone --depth 1 --filter=blob:none --sparse https://github.com/AstroVela/vane.git vane-examples`, then run `cd vane-examples` and `git sparse-checkout set examples`. Install the common runtime packages with `uv pip install vane-ai numpy pyarrow`, and add the example-specific dependencies listed below.
 
 The sparse checkout keeps the `vane/` and `duckdb/` source directories out of the working tree, so the scripts and local Ray workers import the installed wheel rather than a neighboring source checkout.
 
@@ -954,8 +954,8 @@ The base environment above is enough for MinHash deduplication and placeholder i
 | Common Crawl and Red Pajamas | `uv pip install torch sentence-transformers transformers` | Use the local-files-only option after `sentence-transformers/all-MiniLM-L6-v2` is cached; Common Crawl can skip embeddings |
 | Querying images | `uv pip install Pillow` | The OpenImages source also needs network access |
 | Image generation | None for the placeholder backend | Stable Diffusion needs `uv pip install diffusers transformers accelerate torch Pillow` |
-| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]==0.1.0'` |
-| Basic Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` and `OPENAI_API_KEY` | Set `OPENAI_BASE_URL` to use an OpenAI-compatible API root |
+| Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]'` |
+| Basic Prompt | `uv pip install 'vane-ai[openai]'` and `OPENAI_API_KEY` | Set `OPENAI_BASE_URL` to use an OpenAI-compatible API root |
 
 For a CUDA-enabled workflow, install the PyTorch build that matches the operating system, GPU, and driver. The default PyPI build is not always the correct CUDA build.
 
@@ -1005,14 +1005,14 @@ Start with Common Crawl or Red Pajamas for text and embedding workflows. The com
 
 ## Code provenance
 
-Every fenced code block on these pages is copied from its corresponding source project. The examples use files under `examples/` in the Vane `v0.1.0` tag; the use cases use their named directories in the `demo-scene` repository. The prose explains and connects those excerpts, while the runnable project remains the source of truth.
+Every fenced code block on these pages is copied from its corresponding source project. The examples use files under `examples/` on the Vane repository's `main` branch; the use cases use their named directories in the `demo-scene` repository. The prose explains and connects those excerpts, while the runnable project remains the source of truth.
 
 ## Working with Common Crawl
 
 Route: /docs/data/tutorials/examples/common-crawl
 Source: docs/data/tutorials/examples/common-crawl.mdx
 
-Common Crawl is useful for search, retrieval, and model-training pipelines, but its WET files still need to be decoded, filtered, and divided into model-sized units. This tutorial follows [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py) from raw WARC-shaped records to page, chunk, and embedding outputs.
+Common Crawl is useful for search, retrieval, and model-training pipelines, but its WET files still need to be decoded, filtered, and divided into model-sized units. This tutorial follows [`examples/common_crawl.py`](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py) from raw WARC-shaped records to page, chunk, and embedding outputs.
 
 The default path is deliberately small and offline-friendly. It uses built-in records with the same columns as the real WET path, so the transformation stages stay identical when you later point the script at a local file or URL.
 
@@ -1239,14 +1239,14 @@ The script prints the number of source records, decoded pages, chunks, and embed
 
 The script materializes each Relation through Vane's configured runner. Use `VANE_RUNNER=local` while validating schemas locally, or leave it unset and configure `RAY_ADDRESS` for Ray execution. The source-loading and output contracts do not change.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/common_crawl.py) for every argument and the WET parser implementation.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/common_crawl.py) for every argument and the WET parser implementation.
 
 ## MinHash Text Deduplication
 
 Route: /docs/data/tutorials/examples/minhash-dedupe
 Source: docs/data/tutorials/examples/minhash-dedupe.mdx
 
-Duplicate and near-duplicate text can distort training corpora, retrieval indexes, and analytics. This tutorial follows [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py) through a complete, dependency-light deduplication pipeline: normalize text, compute MinHash signatures, use locality-sensitive hashing to generate candidate pairs, verify those pairs, and keep one representative per connected component.
+Duplicate and near-duplicate text can distort training corpora, retrieval indexes, and analytics. This tutorial follows [`examples/minhash_dedupe.py`](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py) through a complete, dependency-light deduplication pipeline: normalize text, compute MinHash signatures, use locality-sensitive hashing to generate candidate pairs, verify those pairs, and keep one representative per connected component.
 
 The script accepts built-in text blocks, a CSV file, or text extracted from local HTML files. Its default sample includes exact duplicates, punctuation and case variants, unrelated text, and short boilerplate, so you can inspect the behavior without downloading a web corpus.
 
@@ -1517,14 +1517,14 @@ The output directory contains six complementary views:
 
 The terminal summary reports input rows, the chosen LSH shape, collision buckets, candidate pairs, removed duplicates, and the percentage kept. Use the candidate and cluster files together when tuning the threshold: one explains why an edge exists, while the other shows the transitive effect of those edges.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/minhash_dedupe.py) for CSV and HTML loading, probability integration, and output serialization.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/minhash_dedupe.py) for CSV and HTML loading, probability integration, and output serialization.
 
 ## Semantic Search on Red Pajamas
 
 Route: /docs/data/tutorials/examples/llms-red-pajamas
 Source: docs/data/tutorials/examples/llms-red-pajamas.mdx
 
-StackExchange contains many lower-scoring questions even when a closely related, higher-scoring question already exists. This tutorial follows [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py) to build a compact semantic-matching pipeline with Vane.
+StackExchange contains many lower-scoring questions even when a closely related, higher-scoring question already exists. This tutorial follows [`examples/llms_red_pajamas.py`](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py) to build a compact semantic-matching pipeline with Vane.
 
 You will:
 
@@ -1676,14 +1676,14 @@ When an output path is supplied, the same full match rows are written to CSV. Th
 
 The dataset load and similarity loop are intentionally straightforward for a tutorial. The configured Vane runner materializes the embedding workflow, while the all-pairs ranking stays in process after collection. For a much larger candidate set, replace that ranking with a vector index or a partitioned similarity strategy while preserving the row schema shown here.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/llms_red_pajamas.py) for sample rows, output serialization, and every argument.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/llms_red_pajamas.py) for sample rows, output serialization, and every argument.
 
 ## Querying Image Data
 
 Route: /docs/data/tutorials/examples/querying-images
 Source: docs/data/tutorials/examples/querying-images.mdx
 
-Image workflows often begin with tabular metadata but need to decode binary objects before they can answer visual questions. This tutorial follows [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py) to find the images with the largest red regions, while keeping paths, file sizes, dimensions, preview bytes, and masks in one Vane Relation.
+Image workflows often begin with tabular metadata but need to decode binary objects before they can answer visual questions. This tutorial follows [`examples/querying_images.py`](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py) to find the images with the largest red regions, while keeping paths, file sizes, dimensions, preview bytes, and masks in one Vane Relation.
 
 The script can read three sources:
 
@@ -1851,14 +1851,14 @@ The default output directory contains an `images` directory, a `masks` directory
 
 Keep the source Relation and output contract, then replace `magic_red_detector` with the visual rule or model needed by your task. Returning derived bytes alongside scalar metrics is useful when reviewers need both a sortable score and a visual explanation of that score.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/querying_images.py) for sample-image generation, local glob loading, and the public OpenImages listing path.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/querying_images.py) for sample-image generation, local glob loading, and the public OpenImages listing path.
 
 ## Generating Images from Text
 
 Route: /docs/data/tutorials/examples/image-generation
 Source: docs/data/tutorials/examples/image-generation.mdx
 
-Text-to-image generation becomes a data pipeline problem when prompts, model settings, binary outputs, and metadata must stay aligned across many rows. This tutorial follows [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py) to build that pipeline with a Vane batch UDF.
+Text-to-image generation becomes a data pipeline problem when prompts, model settings, binary outputs, and metadata must stay aligned across many rows. This tutorial follows [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py) to build that pipeline with a Vane batch UDF.
 
 The script offers two independent choices:
 
@@ -2069,14 +2069,14 @@ Each output row becomes a numbered PNG file. `metadata.csv` records the row ID, 
 
 The CLI defaults to 512×512 output and 20 diffusion inference steps; execution follows Vane's configured runner. The placeholder backend ignores the diffusion-only settings. For real inference, select the Diffusers backend, make the model available on every worker, choose an appropriate precision, and request GPU resources explicitly.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py) for the full UDF constructor, sample prompt generation, file naming, and all runtime arguments.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py) for the full UDF constructor, sample prompt generation, file naming, and all runtime arguments.
 
 ## Voice AI Analytics
 
 Route: /docs/data/tutorials/examples/voice-ai-analytics
 Source: docs/data/tutorials/examples/voice-ai-analytics.mdx
 
-Audio becomes much easier to search and analyze after it has been converted into timestamped, typed rows. After loading the audio, this tutorial follows [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py) through four processing stages: transcribe audio, summarize each transcript, expand segments into subtitle rows, and embed the segment text for retrieval.
+Audio becomes much easier to search and analyze after it has been converted into timestamped, typed rows. After loading the audio, this tutorial follows [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py) through four processing stages: transcribe audio, summarize each transcript, expand segments into subtitle rows, and embed the segment text for retrieval.
 
 Two execution paths share the same data contract:
 
@@ -2312,19 +2312,19 @@ The terminal output reports audio and subtitle row counts, then previews both su
 
 Transcription and embedding retain separate batch-size controls, while the full Relation workflow is materialized through Vane's configured runner. For GPU speech recognition, pass the requested GPU resource and make sure every worker can import the optional dependencies and access the model cache or model path.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py) for sample WAV generation, OpenAI summary prompting, model-loading errors, and all arguments.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py) for sample WAV generation, OpenAI summary prompting, model-loading errors, and all arguments.
 
 ## Basic Prompt
 
 Route: /docs/data/tutorials/examples/basic-prompt
 Source: docs/data/tutorials/examples/basic-prompt.mdx
 
-Prompting becomes a data operation when every text or image request must stay attached to its source row. This tutorial follows [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py) through the Prompt surfaces published in Vane 0.1.0: plain text, structured output, raw provider responses, and SQL.
+Prompting becomes a data operation when every text or image request must stay attached to its source row. This tutorial follows [`examples/basic_prompt.py`](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py) through Vane's current Prompt surfaces: plain text, structured output, raw provider responses, and SQL.
 
 The example reads the bundled `examples/example.png` file and sends requests to the OpenAI provider. Install the provider extra and expose the credential to the process that executes the relation:
 
 ```bash
-uv pip install 'vane-ai[openai]==0.1.0'
+uv pip install 'vane-ai[openai]'
 export OPENAI_API_KEY="<your-token>"
 ```
 
@@ -2447,7 +2447,7 @@ connection.sql(
 
 Use the Python form when composing Relations and Expressions in Python, and the SQL overload when the surrounding pipeline is already a query. Both forms use the same provider credentials from the worker environment.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/basic_prompt.py) and its bundled [`example.png`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/example.png).
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/basic_prompt.py) and its bundled [`example.png`](https://github.com/AstroVela/vane/blob/main/examples/example.png).
 
 ## Claims Disposition from Multimodal Evidence
 

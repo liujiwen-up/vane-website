@@ -2,7 +2,7 @@
 title: Generating Images from Text
 ---
 
-Text-to-image generation becomes a data pipeline problem when prompts, model settings, binary outputs, and metadata must stay aligned across many rows. This tutorial follows [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py) to build that pipeline with a Vane batch UDF.
+Text-to-image generation becomes a data pipeline problem when prompts, model settings, binary outputs, and metadata must stay aligned across many rows. This tutorial follows [`examples/image_generation.py`](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py) to build that pipeline with a Vane batch UDF.
 
 The script offers two independent choices:
 
@@ -213,4 +213,4 @@ Each output row becomes a numbered PNG file. `metadata.csv` records the row ID, 
 
 The CLI defaults to 512×512 output and 20 diffusion inference steps; execution follows Vane's configured runner. The placeholder backend ignores the diffusion-only settings. For real inference, select the Diffusers backend, make the model available on every worker, choose an appropriate precision, and request GPU resources explicitly.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/image_generation.py) for the full UDF constructor, sample prompt generation, file naming, and all runtime arguments.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/image_generation.py) for the full UDF constructor, sample prompt generation, file naming, and all runtime arguments.

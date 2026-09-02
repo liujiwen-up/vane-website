@@ -23,12 +23,13 @@ const chineseExamples = englishExamples.map((path) =>
 )
 
 const exampleSources = [...englishExamples, ...chineseExamples]
+const tutorialSources = [...englishExamples.slice(1), ...chineseExamples.slice(1)]
 const aiApiSources = [
   'docs/data/concepts/ai-functions.mdx',
   'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/concepts/ai-functions.mdx',
 ]
 
-test('tutorial inventory matches the Vane 0.1.0 examples release', () => {
+test('tutorial inventory matches the current Vane main branch', () => {
   for (const path of [
     'docs/data/tutorials/examples/basic-prompt.mdx',
     'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/tutorials/examples/basic-prompt.mdx',
@@ -41,16 +42,20 @@ test('tutorial inventory matches the Vane 0.1.0 examples release', () => {
     'docs/data/tutorials/examples/multimodal-structured-outputs.mdx',
     'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/tutorials/examples/multimodal-structured-outputs.mdx',
   ]) {
-    assert.equal(existsSync(path), false, `${path} documents an example removed before 0.1.0`)
+    assert.equal(existsSync(path), false, `${path} documents an example removed from main`)
   }
 })
 
-test('example tutorials use immutable 0.1.0 links and released API names', () => {
+test('example tutorials track Vane main and use current API names', () => {
   for (const path of exampleSources) {
     const source = read(path)
-    assert.doesNotMatch(source, /github\.com\/AstroVela\/vane\/blob\/main\/examples\//)
+    assert.doesNotMatch(source, /github\.com\/AstroVela\/vane\/blob\/v[^/]+\/examples\//)
     assert.doesNotMatch(source, /\bembed_text\b/)
     assert.doesNotMatch(source, /duckdb\.sqltypes/)
+  }
+
+  for (const path of tutorialSources) {
+    assert.match(read(path), /github\.com\/AstroVela\/vane\/blob\/main\/examples\//)
   }
 
   for (const path of [
@@ -76,24 +81,33 @@ test('example tutorials use immutable 0.1.0 links and released API names', () =>
   }
 })
 
-test('0.1.0 example setup installs the matching wheel release', () => {
+test('development example setup follows main without release pins', () => {
   for (const path of [
     'docs/data/tutorials/index.mdx',
     'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/tutorials/index.mdx',
   ]) {
-    assert.match(read(path), /uv pip install vane-ai==0\.1\.0 numpy pyarrow/)
-    assert.match(read(path), /uv pip install 'vane-ai\[openai\]==0\.1\.0'/)
+    const source = read(path)
+    assert.match(
+      source,
+      /git clone --depth 1 --filter=blob:none --sparse https:\/\/github\.com\/AstroVela\/vane\.git/,
+    )
+    assert.doesNotMatch(source, /git clone --branch/)
+    assert.match(source, /uv pip install vane-ai numpy pyarrow/)
+    assert.match(source, /uv pip install 'vane-ai\[openai\]'/)
+    assert.doesNotMatch(source, /vane-ai(?:\[openai\])?==/)
   }
 
   for (const path of [
     'docs/data/tutorials/examples/basic-prompt.mdx',
     'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/tutorials/examples/basic-prompt.mdx',
   ]) {
-    assert.match(read(path), /uv pip install 'vane-ai\[openai\]==0\.1\.0'/)
+    const source = read(path)
+    assert.match(source, /uv pip install 'vane-ai\[openai\]'/)
+    assert.doesNotMatch(source, /vane-ai\[openai\]==/)
   }
 })
 
-test('AI documentation uses the flat Vane 0.1.0 option surface', () => {
+test('AI documentation uses the current flat option surface', () => {
   for (const path of aiApiSources) {
     const source = read(path)
     assert.doesNotMatch(

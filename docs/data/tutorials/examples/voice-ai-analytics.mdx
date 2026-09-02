@@ -2,7 +2,7 @@
 title: Voice AI Analytics
 ---
 
-Audio becomes much easier to search and analyze after it has been converted into timestamped, typed rows. After loading the audio, this tutorial follows [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py) through four processing stages: transcribe audio, summarize each transcript, expand segments into subtitle rows, and embed the segment text for retrieval.
+Audio becomes much easier to search and analyze after it has been converted into timestamped, typed rows. After loading the audio, this tutorial follows [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py) through four processing stages: transcribe audio, summarize each transcript, expand segments into subtitle rows, and embed the segment text for retrieval.
 
 Two execution paths share the same data contract:
 
@@ -238,4 +238,4 @@ The terminal output reports audio and subtitle row counts, then previews both su
 
 Transcription and embedding retain separate batch-size controls, while the full Relation workflow is materialized through Vane's configured runner. For GPU speech recognition, pass the requested GPU resource and make sure every worker can import the optional dependencies and access the model cache or model path.
 
-See the [complete 0.1.0 source](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py) for sample WAV generation, OpenAI summary prompting, model-loading errors, and all arguments.
+See the [complete source](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py) for sample WAV generation, OpenAI summary prompting, model-loading errors, and all arguments.

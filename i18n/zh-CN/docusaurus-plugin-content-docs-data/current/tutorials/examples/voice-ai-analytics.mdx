@@ -2,7 +2,7 @@
 title: 语音 AI 分析
 ---
 
-音频被转换为带时间戳、类型明确的数据行后，会更容易搜索和分析。加载音频后，本教程沿着 [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py) 完成四个处理阶段：转写音频、总结每条转录文本、把片段展开为字幕行，再为片段文本生成检索嵌入。
+音频被转换为带时间戳、类型明确的数据行后，会更容易搜索和分析。加载音频后，本教程沿着 [`examples/voice_ai_analytics.py`](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py) 完成四个处理阶段：转写音频、总结每条转录文本、把片段展开为字幕行，再为片段文本生成检索嵌入。
 
 两条执行路径共享相同的数据契约：
 
@@ -238,4 +238,4 @@ def subtitle_rows(table: pa.Table, *, translated_language: str) -> list[dict[str
 
 转写与嵌入仍有各自的批大小控制，而整条 Relation 工作流会通过 Vane 配置的 runner 物化。使用 GPU 语音识别时，需要传入 GPU 资源请求，并确保每个 worker 都能导入可选依赖、访问模型缓存或模型路径。
 
-样例 WAV 生成、OpenAI 摘要提示、模型加载错误信息以及全部参数请查看 [0.1.0 完整源码](https://github.com/AstroVela/vane/blob/v0.1.0/examples/voice_ai_analytics.py)。
+样例 WAV 生成、OpenAI 摘要提示、模型加载错误信息以及全部参数请查看[完整源码](https://github.com/AstroVela/vane/blob/main/examples/voice_ai_analytics.py)。

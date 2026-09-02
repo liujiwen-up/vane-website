@@ -60,7 +60,7 @@ assert.match(page, /<Head>[\s\S]*<title>\{copy\.title\}<\/title>[\s\S]*content=\
 assert.match(page, /import \{ vaneSourceFileUrl \} from '\.\.\/siteLinks'/, 'UseCases page should import the canonical source URL helper')
 assert.match(page, /<Button sm href=\{vaneSourceFileUrl\(u\.example\)\} target="_blank" rel="noreferrer" arrow>/, 'Open example should link to the rendered canonical script')
 assert.doesNotMatch(page, /<Button sm to="\/docs" arrow>\{copy\.openExample\}<\/Button>/, 'Open example should not route to the generic docs entry')
-assert.match(siteLinks, /vaneSourceFileUrl = \(path: string\) => `\$\{GITHUB_URL\}\/blob\/v0\.1\.0\/\$\{path\}`/, 'Canonical source links should follow the immutable 0.1.0 tag')
+assert.match(siteLinks, /vaneSourceFileUrl = \(path: string\) => `\$\{GITHUB_URL\}\/blob\/main\/\$\{path\}`/, 'Canonical source links should follow the main development branch')
 assert.doesNotMatch(page, /See all examples/, 'UseCases page should not render a See all examples CTA')
 assert.doesNotMatch(data, /summary:\s*string|^\s*summary:/m, 'Use cases should not carry an unused summary field')
 
