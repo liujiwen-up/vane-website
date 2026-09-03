@@ -86,8 +86,10 @@ test('0.1.0 example setup installs the matching wheel release', () => {
     'docs/data/tutorials/index.mdx',
     'i18n/zh-CN/docusaurus-plugin-content-docs-data/current/tutorials/index.mdx',
   ]) {
-    assert.match(read(path), /uv pip install vane-ai==0\.1\.0 numpy pyarrow/)
-    assert.match(read(path), /uv pip install 'vane-ai\[openai\]==0\.1\.0'/)
+    const source = read(path)
+    assert.match(source, /uv pip install vane-ai==0\.1\.0 numpy pyarrow/)
+    assert.match(source, /uv pip install 'vane-ai\[openai\]==0\.1\.0'/)
+    assert.doesNotMatch(source, /OPENAI_BASE_URL/)
   }
 
   for (const path of [

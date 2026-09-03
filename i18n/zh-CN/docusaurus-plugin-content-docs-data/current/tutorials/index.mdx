@@ -22,7 +22,7 @@ Sparse checkout 不会把 `vane/` 和 `duckdb/` 源码目录放入工作区，�
 | 查询图像 | `uv pip install Pillow` | OpenImages 数据源还需要网络访问 |
 | 图像生成 | 占位后端无需额外依赖 | Stable Diffusion 需要 `uv pip install diffusers transformers accelerate torch Pillow` |
 | 语音 AI 分析 | `uv pip install torch sentence-transformers transformers` | Faster-Whisper 需要 `uv pip install faster-whisper av`；OpenAI 摘要需要 `uv pip install 'vane-ai[openai]==0.1.0'` |
-| 基础 Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` 和 `OPENAI_API_KEY` | 使用 OpenAI-compatible API 根地址时设置 `OPENAI_BASE_URL` |
+| 基础 Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` 和 `OPENAI_API_KEY` | — |
 
 使用 CUDA 工作流时，请安装与操作系统、GPU 和驱动匹配的 PyTorch build。PyPI 默认包不一定是适合当前机器的 CUDA build。
 

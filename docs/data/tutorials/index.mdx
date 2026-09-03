@@ -22,7 +22,7 @@ The base environment above is enough for MinHash deduplication and placeholder i
 | Querying images | `uv pip install Pillow` | The OpenImages source also needs network access |
 | Image generation | None for the placeholder backend | Stable Diffusion needs `uv pip install diffusers transformers accelerate torch Pillow` |
 | Voice AI analytics | `uv pip install torch sentence-transformers transformers` | Faster-Whisper needs `uv pip install faster-whisper av`; OpenAI summaries need `uv pip install 'vane-ai[openai]==0.1.0'` |
-| Basic Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` and `OPENAI_API_KEY` | Set `OPENAI_BASE_URL` to use an OpenAI-compatible API root |
+| Basic Prompt | `uv pip install 'vane-ai[openai]==0.1.0'` and `OPENAI_API_KEY` | — |
 
 For a CUDA-enabled workflow, install the PyTorch build that matches the operating system, GPU, and driver. The default PyPI build is not always the correct CUDA build.
 
